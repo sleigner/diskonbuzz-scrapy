@@ -20,7 +20,15 @@ class PromopediaItem(scrapy.Item):
     start_date = scrapy.Field()
     expiry_date = scrapy.Field()
     issuer = scrapy.Field()
-    store = scrapy.Field()
+    store_name = scrapy.Field()
+    store_id = scrapy.Field()
+    store_locations = scrapy.Field()
+    location_name = scrapy.Field()
+    location_address = scrapy.Field()
+    location_district = scrapy.Field()
+    location_city = scrapy.Field()
+    location_extra_1 = scrapy.Field()
+    location_extra_2 = scrapy.Field()
 
 class PromopediaLoader(ItemLoader):
     default_output_processor = TakeFirst()
