@@ -26,6 +26,7 @@ ITEM_PIPELINES = {
     # 'kaskusfjb.pipelines.KaskusFjbMySQLStorePipeline': 110
     # 'kaskusfjb.pipelines.JsonWriterPipeline': 100
     'promopedia.pipelines.SanitizeTitlePipeline': 100,
-    'promopedia.pipelines.CompileStoreLocationPipeline': 105,
-    'promopedia.pipelines.DiskonbuzzSleignerelasticPipeline': 120
+    # 'promopedia.pipelines.CompileStoreLocationPipeline': 105,
+    'promopedia.pipelines.DiskonbuzzSleignerelasticPipeline': 120,
+    'promopedia.pipelines.ImportIntoMysqlPipeline': 125
 }
