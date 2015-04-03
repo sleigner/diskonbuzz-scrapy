@@ -9,6 +9,7 @@ from string import capwords
 from elasticsearch import Elasticsearch
 from HTMLParser import HTMLParser
 
+import ConfigParser
 import re
 
 # -*- coding: utf-8 -*-
@@ -44,6 +45,24 @@ class SanitizeTitlePipeline(object):
 
       return item
 
+class ParseLocationsPipeline(object):
+    def process_item(self, item, spider):
+
+      if 'locations2' in item:
+        # item['locations'] = list(item['locations2'])
+        item['locations'] = item['locations2']
+
+      locations = []
+
+      if 'locations' in item:
+          for i in range(len(item['locations'])):
+              location_parser = DiskonBuzzLocationParser(item['store_name'], i+1)
+              location_parser.feed(item['locations'][i])
+              locations.append(location_parser.location_details)
+          item['locations_parsed'] = locations
+
+      return item
+
 class DiskonbuzzSleignerelasticPipeline(object):
     def __init__ (self):
       self.es = Elasticsearch()
@@ -51,24 +70,16 @@ class DiskonbuzzSleignerelasticPipeline(object):
     def process_item(self, item, spider):
       self.es.index(index='promotion', doc_type='diskonbuzz_v1', id=item['promo_id'], body = { 'description': item['description'], 'title': item['title'], 'url': item['url'], 'store_name': item['store_name'], 'issuer': item['issuer'], 'start_date': item['start_date'], 'expiry_date': item['expiry_date'] })
 
-      locations = []
-
-      if 'locations' in item:
-        for i in range(len(item['locations'])):
-          location_parser = DiskonBuzzLocationParser(item['store_name'], i+1)
-          location_parser.feed(item['locations'][i])
-          locations.append(location_parser.location_details)
-
-      item['locations'] = locations
-
-      self.es.index(index='store', doc_type='diskonbuzz_v1', id=item['store_id'], 
-          body = { 'store_name': item['store_name'], 'locations': locations } )
+      self.es.index(index='store', doc_type='diskonbuzz_v2', id=item['store_id'], 
+          body = { 'store_name': item['store_name'], 'locations': item['locations'] } )
 
       return item
 
 class ImportIntoMysqlPipeline(object):
       def __init__ (self):
-        self.mysqlCon = mdb.connect('milton.sleigner.com', 'sleigner', 'maldini3', 'promopediadev');
+        config = ConfigParser.ConfigParser()
+        config.read('/home/sleigner/scrapy/promopedia/database.ini')
+        self.mysqlCon = mdb.connect(host=config.get('MySql', 'host'), port=config.getint('MySql', 'port'), user=config.get('MySql', 'user'), passwd=config.get('MySql', 'passwd'), db=config.get('MySql', 'db'));
         self.mysqlCon.autocommit(False)
 
       def process_item(self, item, spider):
@@ -90,7 +101,7 @@ class ImportIntoMysqlPipeline(object):
             cur.execute(query)
             new_store_id = cur.lastrowid
             # cur.execute("INSERT into stores(title, description) VALUES(" + ','.join([store_name, store_name]) + ")")
-            for location in item['locations']:
+            for location in item['locations_parsed']:
 
               location_name = None
               location_address = None
