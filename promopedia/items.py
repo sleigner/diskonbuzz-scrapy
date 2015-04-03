@@ -24,6 +24,8 @@ class PromopediaItem(scrapy.Item):
     store_id = scrapy.Field()
     store_locations = scrapy.Field()
     locations = scrapy.Field()
+    locations2 = scrapy.Field()
+    locations_parsed = scrapy.Field()
     # location_address = scrapy.Field()
     # location_district = scrapy.Field()
     # location_city = scrapy.Field()
